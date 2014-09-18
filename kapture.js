@@ -417,5 +417,8 @@ var kapture = (function() {
         }
     };
 
-    return {'Kapture':Kapture};
+    return {
+        'Kapture':Kapture,
+        'Stack':KaptureStack
+    };
 })();
