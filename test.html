@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <script src="http://code.jquery.com/jquery-2.1.1.min.js"> </script>
+    <script src="kapture.js"> </script>
+
+    <script>
+     var kap_stack = new kapture.Stack();
+     kap_stack.training_mode = true;
+     var push_handler = function() {
+         var k = kap_stack.push();
+         k.state['count'] = 0;
+
+         k.add_command('=', function() {
+             this.state['count'] += 1;
+             redraw();
+         });
+
+         k.add_command('-', function() {
+             this.state['count'] -= 1;             
+             redraw();
+         });
+
+         k.add_command('d', function() {
+             kap_stack.pop();
+             redraw();
+         });
+
+         k.add_command('p', function() {
+             push_handler();
+             redraw();
+         });
+
+         console.log("Push handler");
+         redraw();
+     };
+
+     var pop_handler = function() {
+     };
+
+     $(document).ready(function() {
+         $(window).keydown(function(event) {
+             kap_stack.key_down(event);
+         });
+
+         kap_stack.get_current_handler().state['count'] = 0;
+         
+         kap_stack.get_current_handler().add_command('q', function(term) {
+             alert('quit');
+         });
+         
+         kap_stack.get_current_handler().add_command('p', function(term) {
+             push_handler();
+             redraw();
+         });
+
+         kap_stack.get_current_handler().add_command('d', function(term) {
+             alert("Bottom of stack.");
+         });
+
+         kap_stack.get_current_handler().state['count'] = 0;
+
+         kap_stack.get_current_handler().add_command('=', function() {
+             this.state['count'] += 1;
+             redraw();
+         });
+
+         kap_stack.get_current_handler().add_command('-', function() {
+             this.state['count'] -= 1;             
+             redraw();
+         });
+     });
+
+     var redraw = function() {
+         $('#state').html('');
+         for(var i = 0; i < kap_stack.listener_stack.length; i++) {
+             var obj = kap_stack.listener_stack[i];
+             var d = document.createElement('div');
+             d.innerHTML = "State: " + obj.state['count'];
+             $("#state").append(d);
+         }
+     };
+
+    </script>
+    <style>
+     #state {
+       font-size: 20px;
+     }
+    </style>
+  </head>
+
+  <body>
+    state:<div id='state'></div>
+  </body>
+</html>

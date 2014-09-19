@@ -20,6 +20,7 @@ var kapture = (function() {
     };
 
     Kapture.prototype.initialize = function() {
+        this.state = {};
         this.stop_event = 0;
         this.last_event = null;
         this.last_guess = null;
@@ -83,12 +84,10 @@ var kapture = (function() {
         this.pushes = {};
         this.cancel_keybinding = 'control-g';
 
-        this.add_push('control-x');
+        //this.add_push('control-x');
+        //this.add_command('control-x control-v', function(term) { alert("Version 0.2 Kapture written by Graham Abbott <graham.abbott@gmail.com>"); });
 
         this.add_command(this.cancel_keybinding, function(term) { term.command_cancel(); });
-        this.add_command('control-x control-v', function(term) { alert("Version 0.2 Kapture written by Graham Abbott <graham.abbott@gmail.com>"); });
-        this.add_command('` h', function(term) { term.show_help(term); } );
-        this.add_passive_command('control-x control-n', function(term) { alert("this will not happen while focused on a textfield"); } );
 
         this.history = [];
         this.command_stack = [];
@@ -165,7 +164,7 @@ var kapture = (function() {
                 var c = this.capture_buffer.join('');
                 this.capture_buffer = [];
                 if (this.commands[c] !== undefined) {
-                    result = this.commands[c](this);
+                    result = this.commands[c].apply(this, [this]);
                 }
                 event.preventDefault();
             } else {
@@ -196,7 +195,7 @@ var kapture = (function() {
             var retain = [];
             for( var f=0; f < commands.length; f++ ) {
                 var fc = commands[f];
-                var r = fc(this);
+                var r = fc.apply(this, [this]);
                 if (r != -1) {
                     retain.push(fc);
                 }
@@ -209,7 +208,7 @@ var kapture = (function() {
             var retain = [];
             for( var f=0; f < commands.length; f++ ) {
                 var fc = commands[f];
-                var r = fc(this);
+                var r = fc.apply(this, [this]);
                 if (r != -1) {
                     retain.push(fc);
                 }
@@ -222,7 +221,7 @@ var kapture = (function() {
             var retain = [];
             for( var f=0; f < commands.length; f++ ) {
                 var fc = commands[f];
-                var r = fc(this);
+                var r = fc.apply(this, [this]);
                 if (r != -1) {
                     retain.push(fc);
                 }
@@ -245,7 +244,7 @@ var kapture = (function() {
         if (this.anyevent_commands.length) {
             for(var i = 0; i < this.anyevent_commands.length; i++) {
               var f = this.anyevent_commands[i];
-              f(this);
+                f.apply(this, [this]);
             }
         }
     
@@ -374,13 +373,12 @@ var kapture = (function() {
     var KaptureStack = function() {
         this.listener_stack = [];
         this.listener_states = {};
-        this.current_state = 0;
         this.listener_stack.push( new Kapture() );
     };
     
     KaptureStack.prototype.get_current_handler = function() {
         if (this.listener_stack.length) {
-            return this.listener_stack[this.current_state];
+            return this.listener_stack[this.listener_stack.length-1];
         } else {
             return null;
         }
